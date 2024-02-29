@@ -15,6 +15,7 @@ using CsvHelper;
 using CsvHelper.Configuration.Attributes;
 using System.Reflection;
 using System.Threading;
+using System.Timers;
 
 namespace WindowsFormsApp3
 {
@@ -56,9 +57,12 @@ namespace WindowsFormsApp3
         List<int> ori_height = new List<int>();
         List<double> oripix_x = new List<double>();
         List<double> oripix_y = new List<double>();
+
+        DataTable data_entry_dt = new DataTable();
         //Data_Entry_csv
 
-        HashSet<string> imageIndexSet;
+        private DataTable filtered_data = new DataTable();
+        // Finding Labels 열의 각 요소를 콤보박스에 넣기 위해 추출
 
         public int index = 0;
         public int box_index;
@@ -71,7 +75,8 @@ namespace WindowsFormsApp3
         };
 
         List<string> filelist = new List<string>();
-        List<string> filtered_filelist = new List<string>();
+        List<string> filter_filelist = new List<string>();
+        List<string> have_bbox_list = new List<string>();
         public void Load_Image()
         {
             foreach (string path in folderPath)
@@ -123,12 +128,11 @@ namespace WindowsFormsApp3
                 using (var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
                 {
                     using (var csvDataReader = new CsvDataReader(csvReader))
-                    {
-                        DataTable dt = new DataTable();
-                        dt.Load(csvDataReader);
+                    {                   
+                        data_entry_dt.Load(csvDataReader);
 
                         // dt 정렬하고 새로운 DataTable에 넣어서 list 에 저장해주기.
-                        DataView dv = dt.DefaultView;
+                        DataView dv = data_entry_dt.DefaultView;
                         dv.Sort = "Image Index ASC";
 
                         DataTable sort_dt = dv.ToTable();
@@ -149,7 +153,7 @@ namespace WindowsFormsApp3
                             oripix_y.Add(Convert.ToDouble(row["y]"]));
                             // -------------------------------
                         }
-                        dataGridView2.DataSource = dt;
+                        dataGridView2.DataSource = data_entry_dt;
                     }
                 }
             }
@@ -170,12 +174,13 @@ namespace WindowsFormsApp3
         {
             InitializeComponent();
             file_process();
+            Console.WriteLine("시작");
         }
         private void Form1_Load(object sender, EventArgs e)
         {
             read_BBox_List();
             read_Data_Entry();
-
+            Console.WriteLine("시작");
             // foreach문이 너무 오래걸려서 HashSet 을 사용헤서 훨씬 빠르게 동작.
 
             //foreach (string file in files)
@@ -187,17 +192,17 @@ namespace WindowsFormsApp3
             //        }
             //}
 
-            imageIndexSet = new HashSet<string>(image_index);
+            HashSet<string> imageIndexSet = new HashSet<string>(image_index);
 
             var filteredFiles = filelist.Where(file =>
             {
                 string fileName = Path.GetFileName(file);
                 return imageIndexSet.Contains(fileName);
             });
-            filtered_filelist = filteredFiles.ToList();
-
+            have_bbox_list = filteredFiles.ToList();
+            Console.WriteLine(filelist.Count);
             //Console.WriteLine(filteredFiles.GetType());
-            //Console.WriteLine(filtered_filelist.GetType());
+            //Console.WriteLine(have_bbox_list.GetType());
 
             ////------------------------------------------------------------------
 
@@ -208,6 +213,7 @@ namespace WindowsFormsApp3
             //{
             //    Console.WriteLine(i);
             //}
+            filter_filelist = filelist;
             Display_image(index);
         }
         private void Display_image(int func_index)
@@ -222,10 +228,10 @@ namespace WindowsFormsApp3
             label7.Text = "Patiend Age > " + patient_Age[func_index].ToString();
             label8.Text = "Patient Gender > " + patient_Gen[func_index].ToString();
 
-            if (filtered_filelist.Contains(now_filename))
+            if (have_bbox_list.Contains(now_filename))
             {
-                box_index = filtered_filelist.IndexOf(now_filename);
-                Cv2.PutText(image, finding_label[box_index], new OpenCvSharp.Point(10, 30), HersheyFonts.HersheyPlain, 1, Scalar.Aqua, 1, LineTypes.AntiAlias);
+                box_index = have_bbox_list.IndexOf(now_filename);
+                Cv2.PutText(image, finding_label[box_index], new OpenCvSharp.Point(10, 30), HersheyFonts.HersheySimplex, 1, Scalar.Aqua, 1, LineTypes.AntiAlias);
                 Cv2.Rectangle(image, new OpenCvSharp.Point(my_x[box_index], my_y[box_index]), new OpenCvSharp.Point(my_x[box_index] + my_w[box_index], my_y[box_index] + my_h[box_index]), Scalar.Green, 1, LineTypes.AntiAlias);
             }
 
@@ -247,7 +253,6 @@ namespace WindowsFormsApp3
                     Display_image(index);
                 }
             }
-            label2.Text = my_info;
         }
 
         private void dataGridView2_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -261,7 +266,6 @@ namespace WindowsFormsApp3
                     Display_image(index);
                 }
             }
-            label2.Text = my_info;
         }
 
         private void previous_btn_Click(object sender, EventArgs e)
@@ -336,6 +340,61 @@ namespace WindowsFormsApp3
                 Display_image(index);
 
             }
+        }
+
+        private void update_list(DataTable datatable)
+        {
+            image_index_01.Clear();
+            finding_label_01.Clear();
+            follow_up.Clear();
+            patient_ID.Clear();
+            patient_Age.Clear();
+            patient_Gen.Clear();
+            view_Posi.Clear();
+            ori_width.Clear();
+            ori_height.Clear();
+            oripix_x.Clear();
+            oripix_y.Clear();
+            foreach (DataRow row in datatable.Rows)
+            {
+                image_index_01.Add(row["Image Index"].ToString());
+                finding_label_01.Add(row["Finding Labels"].ToString());
+                follow_up.Add(Convert.ToInt16(row["Follow-up #"]));
+                patient_ID.Add(Convert.ToInt16(row["Patient ID"]));
+                patient_Age.Add(Convert.ToInt16(row["Patient Age"]));
+                patient_Gen.Add(Convert.ToChar(row["Patient Gender"]));
+                view_Posi.Add(row["View Position"].ToString());
+                ori_width.Add(Convert.ToInt32(row["OriginalImage[Width"]));
+                ori_height.Add(Convert.ToInt32(row["Height]"]));
+                oripix_x.Add(Convert.ToDouble(row["OriginalImagePixelSpacing[x"]));
+                oripix_y.Add(Convert.ToDouble(row["y]"]));
+            }
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            filelist = filter_filelist;
+            data_entry_dt.DefaultView.RowFilter = string.Format("Convert([{0}], 'System.String') LIKE '%{1}%'", "Finding Labels", textBox1.Text);
+            filtered_data = data_entry_dt.DefaultView.ToTable();
+            if (string.IsNullOrEmpty(textBox1.Text))
+            {
+                Console.WriteLine("다지웠네");
+                update_list(filtered_data);
+            }
+            else
+            {
+                Console.WriteLine("바꿧네");
+                update_list(filtered_data);
+            }
+            HashSet<string> imageIndexSet = new HashSet<string>(image_index_01);
+
+            var filteredFiles = filelist.Where(file =>
+            {
+                string fileName = Path.GetFileName(file);
+                return imageIndexSet.Contains(fileName);
+            });
+            filelist = filteredFiles.ToList();
+            Console.WriteLine(filelist.Count);
         }
     }
 }
