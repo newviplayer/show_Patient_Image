@@ -15,9 +15,13 @@ data_entry.csv, bbox_list.csv 파일에는 30000번대 까지의 환자 정보�
 3. data_entry가 담긴 datafridview에서 특정행을 더블클릭하면 해당하는 이미지를 picbox에 출력해준다.
 ![image](https://github.com/newviplayer/show_Patient_Image/assets/123538301/246305ba-b68a-458a-ae1d-07f6de2d41ca)
 
-
-
 4. bbox_list가 담긴 datafridview에서 특정행을 더블클릭하면 해당하는 이미지와 해당 좌표에맞는 bbox를 picbox에 출력해준다.
 ![image](https://github.com/newviplayer/show_Patient_Image/assets/123538301/18d85baf-373f-4f7a-8cfe-dc0280537d41)
 
+5. textbox에 단어를 입력하면 해당단어를 가진 환자들의 정보들만 필터링 처리 해준다.
+![image](https://github.com/newviplayer/show_Patient_Image/assets/123538301/7eb578d7-cc3c-4e15-a422-ad98933b5bb5)
+
+
+
+https://github.com/newviplayer/show_Patient_Image/assets/123538301/c7217cf6-c5a8-4786-8f4c-22ecd09ee393
 
