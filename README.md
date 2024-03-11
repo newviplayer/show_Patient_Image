@@ -10,7 +10,7 @@ data_entry.csv, bbox_list.csv 파일에는 30000번대 까지의 환자 정보�
 
 
 1. 가장 기본적으로 환자 이미지를 담고있는 picbox와 필터링된 data_list, bbox_list가 datagridview에 출력된 화면.
-2. 이미지를 한장씩, 10장씩 앞으로 뒤로 넘겨볼수있는 버튼과 맨처음, 맨마지막 이미지를 볼 수 있는 버튼이 있고, 우측 하단에 출력된 이미지에 해당하는 환자 정보를 보여준다.
+2. 또한, 이미지를 한장씩, 10장씩 앞으로 뒤로 넘겨볼수있는 버튼과 맨처음, 맨마지막 이미지를 볼 수 있는 버튼이 있고, 우측 하단에 출력된 이미지에 해당하는 환자 정보를 보여준다.
 ![image](https://github.com/newviplayer/show_Patient_Image/assets/123538301/a83a41e1-02d4-4aa3-a400-11619c9f87de)
 
 3. data_entry가 담긴 datafridview에서 특정행을 더블클릭하면 해당하는 이미지를 picbox에 출력해준다.
